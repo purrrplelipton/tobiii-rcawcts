@@ -7,39 +7,47 @@
 				:aria-label="`switch to ${mode === 'light' ? 'dark' : 'light'} mode`"
 				@click="switch$theme"
 			>
-				<template v-if="mode === 'light'">
-					<IconMoon />
-				</template>
-				<template v-if="mode !== 'light'">
-					<IconSun />
-				</template>
-				<span>{{ mode === 'light' ? 'Dark' : 'Light' }} Mode</span>
+				<component :is="mode === 'light' ? 'IconMoon' : 'IconSun'" />
+				<span v-html="`${mode === 'light' ? 'dark' : 'light'} mode`" />
 			</button>
 		</div>
 	</header>
 	<div role="main">
-		<div class="responsive-wrapper"></div>
+		<div class="responsive-wrapper">
+			<component :is="current$view" />
+		</div>
 	</div>
 </template>
 
 <script>
 import { IconMoon, IconSun } from '@tabler/icons-vue';
+import Home from './pages/Home.vue';
+import CountryDetails from './pages/CountryDetails.vue';
+import NotFound from './pages/NotFound.vue';
+
+const routes = { '/': Home, '/:id': CountryDetails };
 
 export default {
 	name: 'App',
 	data() {
-		return { mode: 'light' };
+		return { path: window.location.hash, mode: 'light' };
+	},
+	computed: {
+		current$view() {
+			return routes[this.path.slice(1) || '/'] || NotFound;
+		}
 	},
 	methods: {
 		switch$theme() {
-			if (this.mode === 'light') {
-				this.mode = 'dark';
-				return;
-			}
-			this.mode = 'light';
+			this.mode = this.mode === 'light' ? 'dark' : 'light';
 		}
 	},
-	components: { IconMoon, IconSun }
+	components: { Home, IconMoon, IconSun },
+	mounted() {
+		window.addEventListener('hashchange', () => {
+			this.path = window.location.hash;
+		});
+	}
 };
 </script>
 
@@ -65,6 +73,7 @@ export default {
   font: inherit;
   color: inherit;
   max-width: 100%;
+	background-color: transparent;
 }
 
 #app {
@@ -77,9 +86,35 @@ export default {
   margin: 0 auto;
 }
 
+.sr-only {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border-width: 0;
+}
+
+.not-sr-only {
+	position: static;
+	width: auto;
+	height: auto;
+	padding: 0;
+	margin: 0;
+	overflow: visible;
+	clip: auto;
+	white-space: normal;
+}
+
 header {
   background-color: #fff;
   box-shadow: 0 2px 4px #0001;
+	margin-bottom: 1.5em;
+	position: sticky;
+	top: 0;
 }
 
 header > .responsive-wrapper {
@@ -87,8 +122,6 @@ header > .responsive-wrapper {
   align-items: center;
   justify-content: space-between;
   padding: 2em 0;
-  position: sticky;
-  top: 0;
 }
 
 header > .responsive-wrapper h1 {
@@ -96,9 +129,14 @@ header > .responsive-wrapper h1 {
 }
 
 header > .responsive-wrapper button:last-child {
-  display: flex;
+	display: flex;
   align-items: center;
   gap: 0.375em;
   background-color: transparent;
+}
+
+header > .responsive-wrapper button:last-child svg {
+	width: 1.25em;
+	height: 1.25em;
 }
 </style>
