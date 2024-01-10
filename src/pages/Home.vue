@@ -17,7 +17,7 @@
 					<component :is="show$options ? 'chevronUp' : 'chevronDown'" />
 				</button>
 				<div v-if="show$options">
-					<template v-for="region in regions" :key="region">
+					<template v-for="{ id, region } in regions" :key="id">
 						<button type="button" @click="select$region(region)">
 							<span v-html="region" />
 						</button>
@@ -25,21 +25,44 @@
 				</div>
 			</div>
 		</div>
-		<div>
-			<template v-for="country in countries">
-				<!-- <Country :flag="country.flag" /> -->
+		<div class="countries-list">
+			<template v-for="{ id, flags, name, population, region, capital } in countries" :key="id">
+				<Country
+					:id="id"
+					:flags="flags"
+					:name="name"
+					:population="population"
+					:region="region"
+					:capital="capital"
+				/>
 			</template>
+		</div>
+		<div role="footer">
+			<button type="button" aria-label="go to previous page">
+				<IconArrowLeft />
+			</button>
+			<button type="button" aria-label="go to next page">
+				<IconArrowRight />
+			</button>
 		</div>
 	</template>
 	<template v-if="!loading && error">
 		<div>
-			<h2>Error fetching data.</h2>
+			<h2>{{ error.message }}</h2>
 		</div>
 	</template>
 </template>
 
 <script>
-import { IconSearch, IconChevronDown, IconChevronUp, IconLoader2 } from '@tabler/icons-vue';
+import { v4 as uuidv4 } from 'uuid';
+import {
+	IconSearch,
+	IconChevronDown,
+	IconChevronUp,
+	IconLoader2,
+	IconArrowLeft,
+	IconArrowRight
+} from '@tabler/icons-vue';
 import Country from '@/components/Country.vue';
 
 export default {
@@ -49,6 +72,7 @@ export default {
 			show$options: false,
 			selected$region: null,
 			loading: false,
+			regions: null,
 			countries: null,
 			error: null,
 			itemsPerPage: 20,
@@ -65,21 +89,15 @@ export default {
 			if (region$dropdown && !region$dropdown.contains(ev.target)) {
 				this.show$options = false;
 			}
-		},
-		extract$regions() {
-			if (this.countries) return [];
-			return [...new Set(this.countries.map((country) => country.region))];
 		}
 	},
-	computed: {
-		regions() {
-			return this.extract$regions();
-		}
-	},
+	computed: {},
 	components: {
 		searchIcon: IconSearch,
 		chevronDown: IconChevronDown,
 		chevronUp: IconChevronUp,
+		IconArrowLeft,
+		IconArrowRight,
 		loaderIcon: IconLoader2,
 		Country
 	},
@@ -93,7 +111,12 @@ export default {
 				throw new Error('Error fetching countries.');
 			}
 			const data = await res.json();
-			this.countries = data.slice(0, this.itemsPerPage);
+			this.countries = await data
+				.slice(0, this.itemsPerPage)
+				.map((country) => ({ id: uuidv4(), ...country }));
+			this.regions = Array.from(new Set(this.countries.map((country) => country.region)))
+				.map((region) => ({ id: uuidv4(), region }))
+				.sort((reg$x, reg$y) => reg$x.region.localeCompare(reg$y.region));
 		} catch (error) {
 			this.error = error;
 		} finally {
@@ -178,5 +201,22 @@ form + div > button + div button {
 	width: 100%;
 	padding: 0.5em 1.375em;
 	text-align: unset;
+}
+
+.countries-list {
+	width: 87.5%;
+	margin: 2em auto 6em;
+}
+
+[role="footer"] {
+	width: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.125em;
+	position: sticky;
+	bottom: 0;
+	background-color: #0000;
+	background-image: linear-gradient(to bottom, #0000, #fff);
 }
 </style>

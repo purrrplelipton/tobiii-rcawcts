@@ -57,6 +57,7 @@ export default {
   background-color: hsl(0, 0%, 98%);
   font-family: "Nunito Sans", sans-serif;
   font-weight: 600;
+	line-height: 1.5;
   min-height: 100%;
 }
 
@@ -67,13 +68,15 @@ export default {
   border-width: 0;
   border-style: solid;
   border-color: transparent;
-  outline-width: 0;
+  outline-width: 2px;
+  outline-offset: 2px;
   outline-style: solid;
   outline-color: transparent;
   font: inherit;
   color: inherit;
   max-width: 100%;
 	background-color: transparent;
+	text-decoration: none;
 }
 
 #app {
@@ -114,6 +117,7 @@ header {
   box-shadow: 0 2px 4px #0001;
 	margin-bottom: 1.5em;
 	position: sticky;
+	z-index: 99;
 	top: 0;
 }
 
