@@ -5,16 +5,16 @@
 		</div>
 	</template>
 	<template v-if="!loading && countries && !error">
-		<div>
+		<div data-role="header">
 			<form>
-				<component :is="'searchIcon'" />
+				<IconSearch />
 				<input type="text" placeholder="Search for a country..." />
 				<button type="submit" class="sr-only">search</button>
 			</form>
 			<div ref="regionDropdown">
 				<button aria-haspopup="true" type="button" @click="show$options = !show$options">
 					<span v-html="selected$region || 'Filter by Region'" />
-					<component :is="show$options ? 'chevronUp' : 'chevronDown'" />
+					<component :is="show$options ? 'chevronUp' : 'chevronDown'" aria-hidden="true" />
 				</button>
 				<div v-if="show$options">
 					<template v-for="{ id, region } in regions" :key="id">
@@ -26,9 +26,9 @@
 			</div>
 		</div>
 		<div class="countries-list">
-			<template v-for="{ id, flags, name, population, region, capital } in countries" :key="id">
+			<template v-for="{ cca3, flags, name, population, region, capital } in countries" :key="cca3">
 				<Country
-					:id="id"
+					:cca3="cca3"
 					:flags="flags"
 					:name="name"
 					:population="population"
@@ -37,7 +37,7 @@
 				/>
 			</template>
 		</div>
-		<div role="footer">
+		<div data-role="footer">
 			<button type="button" aria-label="go to previous page">
 				<IconArrowLeft />
 			</button>
@@ -93,7 +93,7 @@ export default {
 	},
 	computed: {},
 	components: {
-		searchIcon: IconSearch,
+		IconSearch,
 		chevronDown: IconChevronDown,
 		chevronUp: IconChevronUp,
 		IconArrowLeft,
@@ -105,15 +105,13 @@ export default {
 		try {
 			this.loading = true;
 			const res = await fetch(
-				`https://restcountries.com/v3.1/all?fields=name,flags,population,region,capital`
+				'https://restcountries.com/v3.1/all?fields=name,flags,population,region,capital,cca3'
 			);
 			if (!res.ok) {
 				throw new Error('Error fetching countries.');
 			}
 			const data = await res.json();
-			this.countries = await data
-				.slice(0, this.itemsPerPage)
-				.map((country) => ({ id: uuidv4(), ...country }));
+			this.countries = await data.slice(0, this.itemsPerPage);
 			this.regions = Array.from(new Set(this.countries.map((country) => country.region)))
 				.map((region) => ({ id: uuidv4(), region }))
 				.sort((reg$x, reg$y) => reg$x.region.localeCompare(reg$y.region));
@@ -162,7 +160,13 @@ form {
 	margin-bottom: 3em;
 }
 
-form + div {
+[data-role="header"] {
+	position: sticky;
+	z-index: 99;
+	top: 112px;
+}
+
+[data-role="header"] > div {
 	font-size: .875em;
 	display: inline-block;
 	width: 100%;
@@ -170,7 +174,7 @@ form + div {
 	position: relative;
 }
 
-form + div > button {
+[data-role="header"] > div > button {
 	width: 100%;
 	display: flex;
 	align-items: center;
@@ -181,12 +185,16 @@ form + div > button {
 	box-shadow: 0 1px 8px #0001;
 }
 
-form + div > button svg {
+[data-role="header"] > div > button:focus {
+	outline-color: currentColor;
+}
+
+[data-role="header"] > div > button svg {
 	width: 1.25em;
 	height: 1.25em;
 }
 
-form + div > button + div {
+[data-role="header"] > div > button + div {
 	position: absolute;
 	z-index: 1;
 	inset: calc(100% + 0.375em) 0 auto 0;
@@ -196,7 +204,7 @@ form + div > button + div {
 	box-shadow: 0 4px 12px #0001;
 }
 
-form + div > button + div button {
+[data-role="header"] > div > button + div button {
 	display: block;
 	width: 100%;
 	padding: 0.5em 1.375em;
@@ -205,10 +213,12 @@ form + div > button + div button {
 
 .countries-list {
 	width: 87.5%;
-	margin: 2em auto 6em;
+	margin: 2em auto 4em;
+	display: grid;
+	gap: 2em;
 }
 
-[role="footer"] {
+[data-role="footer"] {
 	width: 100%;
 	display: flex;
 	align-items: center;
@@ -218,5 +228,50 @@ form + div > button + div button {
 	bottom: 0;
 	background-color: #0000;
 	background-image: linear-gradient(to bottom, #0000, #fff);
+	padding: 8px 0;
+}
+
+[data-role="footer"] button {
+	display: grid;
+	place-items: center;
+	padding: 6px;
+}
+
+[data-role="footer"] button > svg {
+	width: 1.25em;
+	height: 1.25em;
+}
+
+@media only screen  and (min-width: 625px) {
+	.countries-list {
+		grid-template-columns: repeat(2, 1fr);
+		gap: 2.5em;
+	}
+}
+
+@media only screen  and (min-width: 768px) {
+	[data-role="header"] {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+	}
+
+	form {
+		margin-bottom: 0;
+	}
+}
+
+@media only screen  and (min-width: 1024px) {
+	.countries-list {
+		grid-template-columns: repeat(3, 1fr);
+		gap: 4em;
+	}
+}
+
+@media only screen  and (min-width: 1280px) {
+	.countries-list {
+		grid-template-columns: repeat(4, 1fr);
+		gap: 4em;
+	}
 }
 </style>

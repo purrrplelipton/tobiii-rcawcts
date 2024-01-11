@@ -1,5 +1,5 @@
 <template>
-	<a :href="id">
+	<a :href="cca3">
 		<img :src="flags.png" :alt="flags.alt || `an image of ${name.common}'s flag'`" />
 		<div>
 			<h2 v-html="name.common" />
@@ -17,8 +17,8 @@ export default {
 	name: 'CountrySummary',
 	props: {
 		capital: Array,
+		cca3: String,
 		flags: { png: String, alt: String },
-		id: String,
 		name: { common: String },
 		population: Number,
 		region: String
@@ -42,10 +42,6 @@ a {
 
 	a:hover {
 		transform: scale(1.025);
-	}
-
-	a:not(:last-child) {
-		margin-bottom: 2em;
 	}
 
 	a img {
