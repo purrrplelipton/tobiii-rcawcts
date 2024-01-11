@@ -1,6 +1,6 @@
 <template>
-	<a :href="cca3">
-		<img :src="flags.png" :alt="flags.alt || `an image of ${name.common}'s flag'`" />
+	<RouterLink :to="cca3">
+		<img loading="lazy" :src="flags.png" :alt="flags.alt || `an image of ${name.common}'s flag'`" />
 		<div>
 			<h2 v-html="name.common" />
 			<div>
@@ -9,10 +9,12 @@
 				<p>Capital: <span v-html="capital[0]" /></p>
 			</div>
 		</div>
-	</a>
+	</RouterLink>
 </template>
 
 <script>
+import { RouterLink } from 'vue-router';
+
 export default {
 	name: 'CountrySummary',
 	props: {
@@ -22,7 +24,8 @@ export default {
 		name: { common: String },
 		population: Number,
 		region: String
-	}
+	},
+	components: { RouterLink }
 };
 </script>
 

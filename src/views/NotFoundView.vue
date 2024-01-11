@@ -4,9 +4,9 @@
 
 <script>
 export default {
-	name: 'NotFoundPage',
+	name: 'NotFoundView',
 	data() {}
 };
 </script>
 
-<style lang="scss" scoped></style>
+<style scoped></style>

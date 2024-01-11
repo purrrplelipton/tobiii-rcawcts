@@ -6,11 +6,10 @@
 	</template>
 	<template v-if="!loading && countries && !error">
 		<div data-role="header">
-			<form>
+			<div data-role="form">
 				<IconSearch />
 				<input type="text" placeholder="Search for a country..." />
-				<button type="submit" class="sr-only">search</button>
-			</form>
+			</div>
 			<div ref="regionDropdown">
 				<button aria-haspopup="true" type="button" @click="show$options = !show$options">
 					<span v-html="selected$region || 'Filter by Region'" />
@@ -66,7 +65,7 @@ import {
 import Country from '@/components/Country.vue';
 
 export default {
-	name: 'HomePage',
+	name: 'HomeView',
 	data() {
 		return {
 			show$options: false,
@@ -136,19 +135,11 @@ export default {
 	place-items: center;
 }
 
-@keyframes spin {
-	from {
-		transform: rotate(0turn);
-	} to {
-		transform: rotate(1turn);
-	}
-}
-
 .loader-div > svg {
-	animation: spin 1.125s linear infinite;
+	animation: spin 1s linear infinite;
 }
 
-form {
+[data-role="form"] {
 	display: flex;
 	align-items: center;
 	gap: 1.5rem;
@@ -160,13 +151,17 @@ form {
 	margin-bottom: 3em;
 }
 
+[data-role="form"]:focus-within {
+	outline-color: currentColor;
+}
+
 [data-role="header"] {
 	position: sticky;
 	z-index: 99;
 	top: 112px;
 }
 
-[data-role="header"] > div {
+[data-role="header"] > div:not([data-role="form"]) {
 	font-size: .875em;
 	display: inline-block;
 	width: 100%;
@@ -174,7 +169,7 @@ form {
 	position: relative;
 }
 
-[data-role="header"] > div > button {
+[data-role="header"] > div:not([data-role="form"]) > button {
 	width: 100%;
 	display: flex;
 	align-items: center;
@@ -185,16 +180,17 @@ form {
 	box-shadow: 0 1px 8px #0001;
 }
 
-[data-role="header"] > div > button:focus {
+[data-role="header"] > div:not([data-role="form"]) > button:focus {
 	outline-color: currentColor;
 }
 
-[data-role="header"] > div > button svg {
+[data-role="header"] > div:not([data-role="form"]) > button svg {
 	width: 1.25em;
 	height: 1.25em;
+	pointer-events: none;
 }
 
-[data-role="header"] > div > button + div {
+[data-role="header"] > div:not([data-role="form"]) > button + div {
 	position: absolute;
 	z-index: 1;
 	inset: calc(100% + 0.375em) 0 auto 0;
@@ -204,11 +200,20 @@ form {
 	box-shadow: 0 4px 12px #0001;
 }
 
-[data-role="header"] > div > button + div button {
+[data-role="header"] > div:not([data-role="form"]) > button + div button {
 	display: block;
 	width: 100%;
 	padding: 0.5em 1.375em;
 	text-align: unset;
+}
+
+[data-role="header"] > div:not([data-role="form"]) > button + div button:hover {
+	background-color: #0001;
+}
+
+[data-role="header"] > div:not([data-role="form"]) > button + div button:focus {
+	outline-color: currentColor;
+	border-radius: 6px;
 }
 
 .countries-list {
@@ -256,7 +261,7 @@ form {
 		justify-content: space-between;
 	}
 
-	form {
+	[data-role="form"] {
 		margin-bottom: 0;
 	}
 }
@@ -268,7 +273,7 @@ form {
 	}
 }
 
-@media only screen  and (min-width: 1280px) {
+@media only screen  and (min-width: 1366px) {
 	.countries-list {
 		grid-template-columns: repeat(4, 1fr);
 		gap: 4em;

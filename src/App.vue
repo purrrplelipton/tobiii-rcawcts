@@ -14,40 +14,27 @@
 	</header>
 	<div role="main">
 		<div class="responsive-wrapper">
-			<component :is="current$view" />
+			<RouterView />
 		</div>
 	</div>
 </template>
 
 <script>
 import { IconMoon, IconSun } from '@tabler/icons-vue';
-import Home from './pages/Home.vue';
-import CountryDetails from './pages/CountryDetails.vue';
-import NotFound from './pages/NotFound.vue';
-
-const routes = { '/': Home, '/:id': CountryDetails };
+import { RouterView } from 'vue-router';
 
 export default {
 	name: 'App',
 	data() {
-		return { path: window.location.hash, mode: 'light' };
+		return { mode: 'light' };
 	},
-	computed: {
-		current$view() {
-			return routes[this.path.slice(1) || '/'] || NotFound;
-		}
-	},
+	computed: {},
 	methods: {
 		switch$theme() {
 			this.mode = this.mode === 'light' ? 'dark' : 'light';
 		}
 	},
-	components: { Home, IconMoon, IconSun },
-	mounted() {
-		window.addEventListener('hashchange', () => {
-			this.path = window.location.hash;
-		});
-	}
+	components: { RouterView, IconMoon, IconSun }
 };
 </script>
 
@@ -59,6 +46,7 @@ export default {
   font-weight: 600;
 	line-height: 1.5;
   min-height: 100%;
+	scroll-behavior: smooth;
 }
 
 * {
@@ -90,27 +78,12 @@ export default {
 	position: relative;
 }
 
-.sr-only {
-	position: absolute;
-	width: 1px;
-	height: 1px;
-	padding: 0;
-	margin: -1px;
-	overflow: hidden;
-	clip: rect(0, 0, 0, 0);
-	white-space: nowrap;
-	border-width: 0;
-}
-
-.not-sr-only {
-	position: static;
-	width: auto;
-	height: auto;
-	padding: 0;
-	margin: 0;
-	overflow: visible;
-	clip: auto;
-	white-space: normal;
+@keyframes spin {
+	from {
+		transform: rotate(0turn);
+	} to {
+		transform: rotate(1turn);
+	}
 }
 
 header {
@@ -138,6 +111,11 @@ header > .responsive-wrapper button:last-child {
   align-items: center;
   gap: 0.375em;
   background-color: transparent;
+	border-radius: 4px;
+}
+
+header > .responsive-wrapper button:last-child:focus {
+	outline-color: currentColor;
 }
 
 header > .responsive-wrapper button:last-child svg {
