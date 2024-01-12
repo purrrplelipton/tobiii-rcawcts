@@ -110,7 +110,9 @@ export default {
 				throw new Error('Error fetching countries.');
 			}
 			const data = await res.json();
-			this.countries = await data.slice(0, this.itemsPerPage);
+			this.countries = await data
+				.sort((x, y) => x.name.common.localeCompare(y.name.common))
+				.slice(0, this.itemsPerPage);
 			this.regions = Array.from(new Set(this.countries.map((country) => country.region)))
 				.map((region) => ({ id: uuidv4(), region }))
 				.sort((reg$x, reg$y) => reg$x.region.localeCompare(reg$y.region));

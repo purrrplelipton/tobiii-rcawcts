@@ -1,6 +1,6 @@
 <template>
 	<RouterLink :to="cca3">
-		<img loading="lazy" :src="flags.png" :alt="flags.alt || `an image of ${name.common}'s flag'`" />
+		<img loading="lazy" :src="flags.svg" :alt="flags.alt || `an image of ${name.common}'s flag'`" />
 		<div>
 			<h2 v-html="name.common" />
 			<div>
