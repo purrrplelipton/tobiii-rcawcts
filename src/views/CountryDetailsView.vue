@@ -11,73 +11,81 @@
 		</div>
 	</template>
 	<template v-if="!loading && country$details && !error">
-		<div class="country-details">
-			<div>
+		<div class="country-deets">
+			<div class="flag-div">
 				<img
 					loading="lazy"
 					:src="country$details.flags.svg"
 					:alt="country$details.flags.alt || `an image of ${country$details.name.common}'s flag'`"
 				/>
 			</div>
-			<div>
+			<div class="deets">
 				<h2 v-html="country$details.name.common" />
 				<div>
-					<p>
-						Native Name:
-						<span>
-							<template
-								v-for="nativeName in Object.keys(country$details.name.nativeName)"
-								:key="nativeName"
-							>
-								<span v-html="country$details.name.nativeName[nativeName].official" />
-							</template>
-						</span>
-					</p>
-					<p>Population: <span v-html="country$details.population" /></p>
-					<p>Region: <span v-html="country$details.region" /></p>
-					<p>Sub Region: <span v-html="country$details.subregion" /></p>
-					<p>
-						Capital:
-						<span>
-							<template v-for="capital in country$details.capital" :key="capital">
-								<span v-html="capital" />
-							</template>
-						</span>
-					</p>
+					<div class="deet">
+						<p>
+							Native Name:
+							<span>
+								<template
+									v-for="nativeName in Object.keys(country$details.name.nativeName)"
+									:key="nativeName"
+								>
+									<span v-html="country$details.name.nativeName[nativeName].official" />
+								</template>
+							</span>
+						</p>
+						<p>Population: <span v-html="country$details.population" /></p>
+						<p>Region: <span v-html="country$details.region" /></p>
+						<p>Sub Region: <span v-html="country$details.subregion" /></p>
+						<p>
+							Capital:
+							<span v-if="country$details.capital">
+								<template v-for="capital in country$details.capital" :key="capital">
+									<span v-html="capital" />
+								</template>
+							</span>
+						</p>
+					</div>
+					<div class="deet">
+						<p>
+							Top Level Domain:
+							<span>
+								<template v-for="tld in country$details.tld" :key="tld">
+									<span v-html="tld" />
+								</template>
+							</span>
+						</p>
+						<p>
+							Currencies:
+							<span>
+								<template
+									v-for="currency in Object.keys(country$details.currencies)"
+									:key="currency"
+								>
+									<span v-html="country$details.currencies[currency].name" />
+								</template>
+							</span>
+						</p>
+						<p>
+							Languages:
+							<span>
+								<template
+									v-for="language in Object.keys(country$details.languages)"
+									:key="language"
+								>
+									<span v-html="country$details.languages[language]" />
+								</template>
+							</span>
+						</p>
+					</div>
 				</div>
-			</div>
-			<div>
-				<p>
-					Top Level Domain:
-					<span>
-						<template v-for="tld in country$details.tld" :key="tld">
-							<span v-html="tld" />
-						</template>
-					</span>
-				</p>
-				<p>
-					Currencies:
-					<span>
-						<template v-for="currency in Object.keys(country$details.currencies)" :key="currency">
-							<span v-html="country$details.currencies[currency].name" />
-						</template>
-					</span>
-				</p>
-				<p>
-					Languages:
-					<span>
-						<template v-for="language in Object.keys(country$details.languages)" :key="language">
-							<span v-html="country$details.languages[language]" />
-						</template>
-					</span>
-				</p>
-			</div>
-			<div>
-				<h3>Border Countries:</h3>
-				<div>
-					<!-- <template v-for="" :key="">
+				<div class="deet_">
+					<h3>Border Countries:</h3>
+					<div>
+						<!-- <template v-for="" :key="">
 						<span v-html="country" />
 					</template> -->
+					</div>
 				</div>
 			</div>
 		</div>
@@ -103,7 +111,7 @@ export default {
 			if (cca3) {
 				return cca3;
 			}
-			return null;
+			return '';
 		}
 	},
 	methods: {
@@ -171,18 +179,19 @@ export default {
 		animation: spin 1s linear infinite;
 	}
 
-	.country-details {
+	.country-deets {
 		width: 100%;
 		margin: 3.75em auto 2.5em;
+		display: grid;
 	}
 
-	.country-details > div:first-child {
+	.flag-div {
 		position: relative;
-		width: 100%;
 		padding-bottom: calc((2 / 3) * 100%);
+		align-self: start;
 	}
 
-	.country-details > div:first-child img {
+	.flag-div img {
 		display: block;
 		position: absolute;
 		inset: 0 auto auto 0;
@@ -192,41 +201,85 @@ export default {
 		object-position: center;
 	}
 
-	.country-details > div:first-child + div {
+	.deets {
+		display: grid;
 		margin: 2.5em 0;
+		align-self: start;
 	}
 
-	.country-details > div:first-child + div h2 {
+	.deets h2 {
 		font-size: 2em;
 		font-weight: 800;
 		margin: 0 0 0.5em;
 	}
 
-	.country-details > div:first-child + div h2 + div,
-	.country-details > div:first-child + div + div {
+	.deets h2 + div {
+		display: grid;
+	}
+
+	.deet {
 		display: flex;
 		flex-flow: column nowrap;
 		align-items: stretch;
 		gap: 0.125em;
 	}
 
-	.country-details > div:first-child + div h2 + div p > span:has(> span),
-	.country-details > div:first-child + div + div p > span:has(> span) {
+	.deet:last-of-type {
+		margin: 2.5em 0;
+	}
+
+	.deet p > span:has(> span) {
 		display: inline-flex;
 		align-items: center;
 	}
 
-	.country-details > div:first-child + div h2 + div p span,
-	.country-details > div:first-child + div + div p > span {
+	.deet p span {
 		font-weight: 300;
 	}
 
-	.country-details > div:last-child {
-		margin: 2.5em 0;
+	/* .deet_ {} */
+
+	.deet_ h3 {
+		font-weight: 800;
+		font-size: 1.25em;
 	}
 
-	.country-details > div:last-child h3 {
-		font-weight: 800;
-		font-size: 1.5em;
+	@media only screen and (min-width: 768px) {
+		.country-deets {
+			grid-template-columns: repeat(2, 1fr);
+			gap: 2em;
+		}
+
+		.flag-div {
+			grid-column: 1 / 2;
+		}
+
+		.deets {
+			grid-template-columns: repeat(2, 1fr);
+			grid-column: 2 / 3;
+			margin: 0;
+		}
+
+		.deets h2,
+		.deets h2 + div,
+		.deet_ {
+			grid-column: 1 / span 2;
+		}
+	}
+
+	@media only screen and (min-width: 1024px) {
+		.country-deets {
+			gap: 3em;
+		}
+
+		.deets h2 + div {
+			grid-template-columns: repeat(2, 1fr);
+		}
+	}
+
+	@media only screen and (min-width: 1366px) {
+		.country-deets {
+			gap: 6em;
+		}
 	}
 </style>

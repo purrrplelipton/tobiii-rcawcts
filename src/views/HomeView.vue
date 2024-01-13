@@ -37,10 +37,15 @@
 			</template>
 		</div>
 		<div data-role="footer">
-			<button type="button" aria-label="go to previous page">
+			<button
+				:aria-disabled="currentPage === 1"
+				type="button"
+				aria-label="go to previous page"
+				@click="previous$page"
+			>
 				<IconArrowLeft />
 			</button>
-			<button type="button" aria-label="go to next page">
+			<button type="button" aria-label="go to next page" @click="next$page">
 				<IconArrowRight />
 			</button>
 		</div>
@@ -71,7 +76,6 @@ export default {
 			show$options: false,
 			selected$region: null,
 			loading: false,
-			regions: null,
 			countries: null,
 			error: null,
 			itemsPerPage: 20,
@@ -88,9 +92,71 @@ export default {
 			if (region$dropdown && !region$dropdown.contains(ev.target)) {
 				this.show$options = false;
 			}
+		},
+		pick$countries(countries, start) {
+			return countries
+				.sort((x, y) => x.name.common.localeCompare(y.name.common))
+				.slice(start, start + this.itemsPerPage);
+		},
+		update$url() {
+			this.$router.push({ query: { page: this.currentPage } });
+		},
+		async previous$page() {
+			if (this.currentPage > 1) {
+				try {
+					this.countries = null;
+					this.loading = true;
+					const response = await fetch(this.uri);
+					if (!response.ok) {
+						throw new Error('Error loading previous page.');
+					}
+					const data = await response.json();
+					this.countries = await this.pick$countries(
+						data,
+						(this.currentPage - 2) * this.itemsPerPage
+					);
+					this.currentPage--;
+					this.update$url();
+				} catch (error) {
+					this.error = error;
+				} finally {
+					this.loading = false;
+				}
+			}
+		},
+		async next$page() {
+			try {
+				this.countries = null;
+				this.loading = true;
+				const response = await fetch(this.uri);
+				if (!response.ok) {
+					throw new Error('Error loading next page.');
+				}
+				const data = await response.json();
+				this.countries = await this.pick$countries(data, this.currentPage * this.itemsPerPage);
+				this.currentPage++;
+				this.update$url();
+			} catch (error) {
+				this.error = error;
+			} finally {
+				this.loading = false;
+			}
 		}
 	},
-	computed: {},
+	computed: {
+		regions() {
+			return Array.from(new Set(this.countries.map((country) => country.region)))
+				.map((region) => ({ id: uuidv4(), region }))
+				.sort((reg$x, reg$y) => reg$x.region.localeCompare(reg$y.region));
+		},
+		uri() {
+			return `https://restcountries.com/v3.1/all?fields=name,flags,population,region,capital,cca3`;
+		}
+	},
+	created() {
+		const currentPage = parseInt(this.$route.query.page) || 1;
+		this.currentPage = currentPage > 0 ? currentPage : 1;
+	},
 	components: {
 		IconSearch,
 		chevronDown: IconChevronDown,
@@ -103,25 +169,23 @@ export default {
 	async mounted() {
 		try {
 			this.loading = true;
-			const res = await fetch(
-				'https://restcountries.com/v3.1/all?fields=name,flags,population,region,capital,cca3'
-			);
+			const res = await fetch(this.uri);
 			if (!res.ok) {
 				throw new Error('Error fetching countries.');
 			}
 			const data = await res.json();
-			this.countries = await data
-				.sort((x, y) => x.name.common.localeCompare(y.name.common))
-				.slice(0, this.itemsPerPage);
-			this.regions = Array.from(new Set(this.countries.map((country) => country.region)))
-				.map((region) => ({ id: uuidv4(), region }))
-				.sort((reg$x, reg$y) => reg$x.region.localeCompare(reg$y.region));
+			this.countries = await this.pick$countries(data, 0);
 		} catch (error) {
 			this.error = error;
 		} finally {
 			this.loading = false;
 		}
 		window.document.addEventListener('click', this.outside$clicked);
+	},
+	watch: {
+		currentPage(newPage) {
+			this.$router.replace({ query: { page: newPage } });
+		}
 	},
 	beforeUnmount() {
 		window.document.removeEventListener('click', this.outside$clicked);

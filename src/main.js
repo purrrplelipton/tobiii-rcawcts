@@ -1,9 +1,14 @@
 import App from '@/App.vue';
 import { createApp } from 'vue';
-import router from './router';
+import { CountryDetailsView, HomeView } from '@/views';
+import { createRouter, createWebHistory } from 'vue-router';
 
-const app = createApp(App);
+const router = createRouter({
+	history: createWebHistory(),
+	routes: [
+		{ path: '/', name: 'home', component: HomeView },
+		{ path: '/:cca3', name: 'country-details', component: CountryDetailsView }
+	]
+});
 
-app.use(router);
-
-app.mount('#app');
+createApp(App).use(router).mount('#app');

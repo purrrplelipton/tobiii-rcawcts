@@ -1,12 +1,25 @@
 <template>
 	<RouterLink :to="cca3">
-		<img loading="lazy" :src="flags.svg" :alt="flags.alt || `an image of ${name.common}'s flag'`" />
+		<div>
+			<img
+				loading="lazy"
+				:src="flags.svg"
+				:alt="flags.alt || `an image of ${name.common}'s flag'`"
+			/>
+		</div>
 		<div>
 			<h2 v-html="name.common" />
 			<div>
 				<p>Population: <span v-html="population" /></p>
 				<p>Region: <span v-html="region" /></p>
-				<p>Capital: <span v-html="capital[0]" /></p>
+				<p>
+					Capital:
+					<span>
+						<template v-for="cptl in capital" :key="cptl">
+							<span v-html="cptl" />
+						</template>
+					</span>
+				</p>
 			</div>
 		</div>
 	</RouterLink>
@@ -47,22 +60,32 @@ a {
 		transform: scale(1.025);
 	}
 
-	a img {
-		display: block;
+	a > div {
 		width: 100%;
-		height: auto;
+		position: relative;
+		padding-bottom: calc((10 / 16) * 100%);
 	}
 
-	a > div {
+	a > div img {
+		display: block;
+		position: absolute;
+		inset: 0 auto auto 0;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		object-position: center;
+	}
+
+	a > div + div {
 		padding: 1.625em 1.5em;
 	}
 
-	a > div h2 {
+	a > div + div h2 {
 		font-size: 1.25em;
 		font-weight: 800;
 	}
 
-	a > div h2 + div {
+	a > div + div h2 + div {
 		padding: 1em 0;
 		display: flex;
 		gap: 0.125em;
@@ -70,7 +93,7 @@ a {
 		align-items: stretch;
 	}
 
-	a > div h2 + div p span {
+	a > div + div h2 + div p span {
 		font-weight: 300;
 	}
 </style>
