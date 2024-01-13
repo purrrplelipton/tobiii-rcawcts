@@ -6,11 +6,41 @@
 	</template>
 	<template v-if="!loading && countries && !error">
 		<div data-role="header">
-			<div data-role="form">
-				<IconSearch />
-				<input type="text" placeholder="Search for a country..." />
+			<div class="search-area">
+				<div class="search-box">
+					<IconSearch />
+					<input
+						type="text"
+						placeholder="Search for a country..."
+						:value="search$value"
+						@input="searchbox$handler"
+					/>
+				</div>
+				<div class="search-results" aria-live="polite">
+					<component v-if="searching && !search$results && !search$error" :is="'loaderIcon'" />
+					<div v-if="!searching && search$results && search$results.length && !search$error">
+						<template v-for="{ cca3, name, flags } in search$results" :key="cca3">
+							<RouterLink :to="cca3">
+								<div>
+									<div>
+										<img
+											loading="lazy"
+											:src="flags.svg"
+											:alt="flags.alt || `an image of the ${name.common}'s flag`"
+										/>
+									</div>
+								</div>
+								<span v-html="name.common" />
+							</RouterLink>
+						</template>
+					</div>
+					<p v-if="!searching && search$results && !search$results.length && !search$error">
+						Couldn't find any result matching “{{ search$value }}”
+					</p>
+					<p v-if="!searching && !search$results && search$error" v-html="search$error.message" />
+				</div>
 			</div>
-			<div ref="regionDropdown">
+			<div class="dropdown-area" ref="regionDropdown">
 				<button aria-haspopup="true" type="button" @click="show$options = !show$options">
 					<span v-html="selected$region || 'Filter by Region'" />
 					<component :is="show$options ? 'chevronUp' : 'chevronDown'" aria-hidden="true" />
@@ -73,22 +103,59 @@ import {
 	IconArrowRight
 } from '@tabler/icons-vue';
 import Country from '@/components/Country.vue';
+import { RouterLink } from 'vue-router';
 
 export default {
 	name: 'HomeView',
 	data() {
 		return {
+			search$value: '',
+			searching: false,
+			search$results: null,
+			search$error: null,
 			show$options: false,
 			selected$region: null,
 			loading: false,
 			countries: null,
 			error: null,
-			itemsPerPage: 20,
+			itemsPerPage: 50,
 			current$page: 1,
-			total$pages: null
+			total$pages: null,
+			search$timeout: null
 		};
 	},
 	methods: {
+		async searchbox$handler(ev) {
+			this.search$value = ev.target.value;
+
+			if (this.search$timeout) {
+				clearTimeout(this.search$timeout);
+			}
+
+			this.search$timeout = setTimeout(async () => {
+				if (this.search$value.trim()) {
+					try {
+						this.searching = true;
+						const response = await fetch(
+							`https://restcountries.com/v3.1/name/${this.search$value}`
+						);
+						if (!response.ok) {
+							if (response.status === 404) return (this.search$results = []);
+							throw new Error('Error searching for country.');
+						}
+						const data = await response.json();
+						this.search$results = data;
+					} catch (error) {
+						this.search$error = error;
+					} finally {
+						this.searching = false;
+					}
+				} else {
+					this.search$results = null;
+					this.search$error = null;
+				}
+			}, 500);
+		},
 		select$region(region) {
 			this.selected$region = region;
 			this.show$options = false;
@@ -105,7 +172,8 @@ export default {
 				.slice(start, start + this.itemsPerPage);
 		},
 		update$url() {
-			this.$router.push({ query: { page: this.current$page } });
+			const current$query = { ...this.$route.query };
+			this.$router.push({ query: { ...current$query, page: this.current$page } });
 		},
 		async previous$page() {
 			if (this.current$page > 1) {
@@ -172,7 +240,8 @@ export default {
 		IconArrowLeft,
 		IconArrowRight,
 		loaderIcon: IconLoader2,
-		Country
+		Country,
+		RouterLink
 	},
 	async mounted() {
 		try {
@@ -199,7 +268,8 @@ export default {
 	},
 	watch: {
 		current$page(newPage) {
-			this.$router.replace({ query: { page: newPage } });
+			const current$query = { ...this.$route.query };
+			this.$router.replace({ query: { ...current$query, page: newPage } });
 		}
 	},
 	beforeUnmount() {
@@ -216,11 +286,16 @@ export default {
 	place-items: center;
 }
 
-.loader-div > svg {
+.loader-div > svg,
+.search-results > svg {
 	animation: spin 1s linear infinite;
 }
 
-[data-role="form"] {
+.search-area {
+	position: relative;
+}
+
+.search-box {
 	display: flex;
 	align-items: center;
 	gap: 1.5rem;
@@ -232,8 +307,73 @@ export default {
 	margin-bottom: 3em;
 }
 
-[data-role="form"]:focus-within {
+.search-box:focus-within {
 	outline-color: currentColor;
+}
+
+.search-results:not(:empty) {
+	position: absolute;
+	inset: calc(100% + 8px) 0 auto 0;
+	border-radius: 8px;
+	background-color: #fff;
+	box-shadow: 0 4px 8px #0001;
+	padding: 14px 0;
+}
+
+.search-results > svg {
+	display: block;
+	margin: 2.5em auto;
+}
+
+.search-results > div {
+	height: 100%;
+	max-height: 320px;
+	overflow-y: auto;
+}
+
+.search-results > div a {
+	display: flex;
+	align-items: center;
+	gap: 1em;
+	padding: 0.625em 1.125em;
+}
+
+.search-results > div a:hover {
+	background-color: hsla(0, 0%, 0%, 0.01);
+}
+
+.search-results > div a:focus {
+	border-radius: 6px;
+	outline-color: currentColor;
+	outline-offset: -2px;
+}
+
+.search-results > div a div {
+	width: 96px;
+}
+
+.search-results > div a div div {
+	position: relative;
+	padding-bottom: calc((10 / 16) * 100%);
+}
+
+.search-results > div a img {
+	position: absolute;
+	inset: 0 auto auto 0;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	object-position: center;
+}
+
+.search-results > div a div + span,
+.search-results > p  {
+	font-size: 0.875em;
+	font-weight: 300;
+}
+
+.search-results > p {
+	text-align: center;
 }
 
 [data-role="header"] {
@@ -242,7 +382,7 @@ export default {
 	top: 112px;
 }
 
-[data-role="header"] > div:not([data-role="form"]) {
+.dropdown-area {
 	font-size: .875em;
 	display: inline-block;
 	width: 100%;
@@ -250,7 +390,7 @@ export default {
 	position: relative;
 }
 
-[data-role="header"] > div:not([data-role="form"]) > button {
+.dropdown-area > button {
 	width: 100%;
 	display: flex;
 	align-items: center;
@@ -261,17 +401,17 @@ export default {
 	box-shadow: 0 1px 8px #0001;
 }
 
-[data-role="header"] > div:not([data-role="form"]) > button:focus {
+.dropdown-area > button:focus {
 	outline-color: currentColor;
 }
 
-[data-role="header"] > div:not([data-role="form"]) > button svg {
+.dropdown-area > button svg {
 	width: 1.25em;
 	height: 1.25em;
 	pointer-events: none;
 }
 
-[data-role="header"] > div:not([data-role="form"]) > button + div {
+.dropdown-area > button + div {
 	position: absolute;
 	z-index: 1;
 	inset: calc(100% + 0.375em) 0 auto 0;
@@ -281,18 +421,18 @@ export default {
 	box-shadow: 0 4px 12px #0001;
 }
 
-[data-role="header"] > div:not([data-role="form"]) > button + div button {
+.dropdown-area > button + div button {
 	display: block;
 	width: 100%;
 	padding: 0.5em 1.375em;
 	text-align: unset;
 }
 
-[data-role="header"] > div:not([data-role="form"]) > button + div button:hover {
-	background-color: #0001;
+.dropdown-area > button + div button:hover {
+	background-color: hsla(0, 0%, 0%, 0.01);
 }
 
-[data-role="header"] > div:not([data-role="form"]) > button + div button:focus {
+.dropdown-area > button + div button:focus {
 	outline-color: currentColor;
 	border-radius: 6px;
 }
@@ -350,7 +490,7 @@ export default {
 		justify-content: space-between;
 	}
 
-	[data-role="form"] {
+	.search-box {
 		margin-bottom: 0;
 	}
 }

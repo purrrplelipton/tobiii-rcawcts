@@ -30,15 +30,16 @@ export default {
 	},
 	computed: {},
 	methods: {
+		update$url() {
+			const current$query = { ...this.$route.query };
+			this.$router.push({ query: { ...current$query, mode: this.mode } });
+		},
 		switch$theme() {
 			this.mode = this.mode === 'light' ? 'dark' : 'light';
-		},
-		update$url() {
-			this.$router.push({ query: { mode: this.mode } });
+			this.update$url();
 		}
 	},
 	components: { RouterView, IconMoon, IconSun }
-	// watch:{}
 };
 </script>
 

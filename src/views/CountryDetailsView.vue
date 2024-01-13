@@ -237,8 +237,6 @@ export default {
 		font-weight: 300;
 	}
 
-	/* .deet_ {} */
-
 	.deet_ h3 {
 		font-weight: 800;
 		font-size: 1.25em;
@@ -274,6 +272,10 @@ export default {
 
 		.deets h2 + div {
 			grid-template-columns: repeat(2, 1fr);
+		}
+
+		.deet:last-of-type {
+			margin: 0;
 		}
 	}
 
