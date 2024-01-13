@@ -32,9 +32,13 @@ export default {
 	methods: {
 		switch$theme() {
 			this.mode = this.mode === 'light' ? 'dark' : 'light';
+		},
+		update$url() {
+			this.$router.push({ query: { mode: this.mode } });
 		}
 	},
 	components: { RouterView, IconMoon, IconSun }
+	// watch:{}
 };
 </script>
 

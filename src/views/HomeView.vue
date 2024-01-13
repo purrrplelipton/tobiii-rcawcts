@@ -38,14 +38,19 @@
 		</div>
 		<div data-role="footer">
 			<button
-				:aria-disabled="currentPage === 1"
+				:aria-disabled="current$page <= 1"
 				type="button"
 				aria-label="go to previous page"
 				@click="previous$page"
 			>
 				<IconArrowLeft />
 			</button>
-			<button type="button" aria-label="go to next page" @click="next$page">
+			<button
+				:aria-disabled="current$page >= total$pages"
+				type="button"
+				aria-label="go to next page"
+				@click="next$page"
+			>
 				<IconArrowRight />
 			</button>
 		</div>
@@ -79,7 +84,8 @@ export default {
 			countries: null,
 			error: null,
 			itemsPerPage: 20,
-			currentPage: 1
+			current$page: 1,
+			total$pages: null
 		};
 	},
 	methods: {
@@ -99,10 +105,10 @@ export default {
 				.slice(start, start + this.itemsPerPage);
 		},
 		update$url() {
-			this.$router.push({ query: { page: this.currentPage } });
+			this.$router.push({ query: { page: this.current$page } });
 		},
 		async previous$page() {
-			if (this.currentPage > 1) {
+			if (this.current$page > 1) {
 				try {
 					this.countries = null;
 					this.loading = true;
@@ -113,9 +119,9 @@ export default {
 					const data = await response.json();
 					this.countries = await this.pick$countries(
 						data,
-						(this.currentPage - 2) * this.itemsPerPage
+						(this.current$page - 2) * this.itemsPerPage
 					);
-					this.currentPage--;
+					this.current$page--;
 					this.update$url();
 				} catch (error) {
 					this.error = error;
@@ -125,21 +131,23 @@ export default {
 			}
 		},
 		async next$page() {
-			try {
-				this.countries = null;
-				this.loading = true;
-				const response = await fetch(this.uri);
-				if (!response.ok) {
-					throw new Error('Error loading next page.');
+			if (this.current$page < this.total$pages) {
+				try {
+					this.countries = null;
+					this.loading = true;
+					const response = await fetch(this.uri);
+					if (!response.ok) {
+						throw new Error('Error loading next page.');
+					}
+					const data = await response.json();
+					this.countries = await this.pick$countries(data, this.current$page * this.itemsPerPage);
+					this.current$page++;
+					this.update$url();
+				} catch (error) {
+					this.error = error;
+				} finally {
+					this.loading = false;
 				}
-				const data = await response.json();
-				this.countries = await this.pick$countries(data, this.currentPage * this.itemsPerPage);
-				this.currentPage++;
-				this.update$url();
-			} catch (error) {
-				this.error = error;
-			} finally {
-				this.loading = false;
 			}
 		}
 	},
@@ -154,8 +162,8 @@ export default {
 		}
 	},
 	created() {
-		const currentPage = parseInt(this.$route.query.page) || 1;
-		this.currentPage = currentPage > 0 ? currentPage : 1;
+		const current$page = parseInt(this.$route.query.page) || 1;
+		this.current$page = current$page > 0 ? current$page : 1;
 	},
 	components: {
 		IconSearch,
@@ -174,7 +182,14 @@ export default {
 				throw new Error('Error fetching countries.');
 			}
 			const data = await res.json();
-			this.countries = await this.pick$countries(data, 0);
+			if (Array.isArray(data)) {
+				this.total$pages = Math.ceil(data.length / this.itemsPerPage);
+				this.countries = await this.pick$countries(
+					data,
+					(this.current$page - 1) * this.itemsPerPage
+				);
+				this.update$url();
+			}
 		} catch (error) {
 			this.error = error;
 		} finally {
@@ -183,7 +198,7 @@ export default {
 		window.document.addEventListener('click', this.outside$clicked);
 	},
 	watch: {
-		currentPage(newPage) {
+		current$page(newPage) {
 			this.$router.replace({ query: { page: newPage } });
 		}
 	},
@@ -290,13 +305,12 @@ export default {
 }
 
 [data-role="footer"] {
-	width: 100%;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	gap: 0.125em;
-	position: sticky;
-	bottom: 0;
+	position: fixed;
+	inset: auto 0 0 0;
 	background-color: #0000;
 	background-image: linear-gradient(to bottom, #0000, #fff);
 	padding: 8px 0;
@@ -306,6 +320,15 @@ export default {
 	display: grid;
 	place-items: center;
 	padding: 6px;
+	border-radius: 8px;
+}
+
+[data-role="footer"] button:not([aria-disabled="true"]):hover {
+	transform: scale(1.125);
+}
+
+[data-role="footer"] button:focus {
+	outline-color: currentColor;
 }
 
 [data-role="footer"] button > svg {
