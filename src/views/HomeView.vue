@@ -325,6 +325,10 @@ export default {
 	padding: 14px 0;
 }
 
+:root[data-mode="dark"] .search-results:not(:empty) {
+	background-color: hsl(209, 23%, 22%);
+}
+
 .search-results > svg {
 	display: block;
 	margin: 2.5em auto;

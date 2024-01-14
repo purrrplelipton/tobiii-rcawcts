@@ -83,7 +83,9 @@
 					<h3>Border Countries:</h3>
 					<div v-if="country$details.borders">
 						<template v-for="border in country$details.borders" :key="border">
-							<span v-html="border" />
+							<RouterLink :to="border">
+								<span v-html="border" />
+							</RouterLink>
 						</template>
 					</div>
 				</div>
@@ -99,6 +101,7 @@
 
 <script>
 import { IconArrowNarrowLeft, IconLoader2 } from '@tabler/icons-vue';
+import { RouterLink } from 'vue-router';
 
 export default {
 	name: 'CountryDetailsView',
@@ -119,7 +122,7 @@ export default {
 			this.$router.back();
 		}
 	},
-	components: { IconArrowNarrowLeft, IconLoader2 },
+	components: { IconArrowNarrowLeft, IconLoader2, RouterLink },
 	async mounted() {
 		try {
 			this.loading = true;
@@ -160,6 +163,10 @@ export default {
 		box-shadow: 0 0 8px #0001;
 	}
 
+	:root[data-mode="dark"] [data-role="header"] > button:first-child {
+		background-color: hsl(209, 23%, 22%);
+	}
+
 	[data-role="header"] > button:first-child:hover {
 		transform: scale(1.025);
 	}
@@ -189,6 +196,7 @@ export default {
 		position: relative;
 		padding-bottom: calc((2 / 3) * 100%);
 		align-self: start;
+		background-color: hsl(0, 0%, 0%, 0.025);
 	}
 
 	.flag-div img {
@@ -263,7 +271,7 @@ export default {
 		gap: 0.625em;
 	}
 
-	.deet_ div span {
+	.deet_ div a {
 		flex-shrink: 0;
 		font-size: 0.9375em;
 		font-weight: 300;
@@ -271,6 +279,10 @@ export default {
 		padding: 0.5em 1.25em 0.375em;
 		box-shadow: 0 0 8px -2px #0002;
 		background-color: #fff;
+	}
+	
+	:root[data-mode="dark"] .deet_ div a {
+		background-color: hsl(209, 23%, 22%);
 	}
 
 	@media only screen and (min-width: 768px) {
@@ -316,12 +328,12 @@ export default {
 		.deet_ {
 			margin: 2.5em 0;
 			display: flex;
-			align-items: center;
 			gap: 1em;
 		}
 
 		.deet_ h3 {
 			margin-bottom: 0;
+			flex-shrink: 0;
 		}
 	}
 

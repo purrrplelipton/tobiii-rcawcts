@@ -28,36 +28,23 @@ export default {
 	data() {
 		return { mode: 'light' };
 	},
-	watch: {
-		'$route.query': {
-			handler(newQuery) {
-				this.mode = newQuery.mode || 'light';
-				this.apply$mode();
-			},
-			immediate: true
-		}
-	},
 	methods: {
-		update$url() {
-			const current$query = { ...this.$route.query };
-			this.$router.push({ query: { ...current$query, mode: this.mode } });
-		},
 		switch$theme() {
 			this.mode = this.mode === 'light' ? 'dark' : 'light';
-			this.update$url();
-		},
-		apply$mode() {
+		}
+	},
+	created() {
+		const { mode } = this.$route.query;
+		this.mode = ['light', 'dark'].includes(mode) ? mode : 'light';
+	},
+	components: { RouterView, IconMoon, IconSun },
+	watch: {
+		mode(selectedMode) {
+			const current$query = { ...this.$route.query };
+			this.$router.replace({ query: { ...current$query, mode: selectedMode } });
 			const { documentElement } = window.document;
 			documentElement.setAttribute('data-mode', this.mode);
 		}
-	},
-	components: { RouterView, IconMoon, IconSun },
-	created() {
-		this.mode = this.$route.query.mode || 'light';
-	},
-	mounted() {
-		this.apply$mode();
-		this.update$url();
 	}
 };
 </script>
@@ -71,6 +58,7 @@ export default {
 	line-height: 1.5;
   min-height: 100%;
 	scroll-behavior: smooth;
+	transition: color 0.1s linear, background-color 0.1s linear;
 }
 
 :root[data-mode="dark"] {
