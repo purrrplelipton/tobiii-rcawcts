@@ -28,7 +28,15 @@ export default {
 	data() {
 		return { mode: 'light' };
 	},
-	computed: {},
+	watch: {
+		'$route.query': {
+			handler(newQuery) {
+				this.mode = newQuery.mode || 'light';
+				this.apply$mode();
+			},
+			immediate: true
+		}
+	},
 	methods: {
 		update$url() {
 			const current$query = { ...this.$route.query };
@@ -37,9 +45,20 @@ export default {
 		switch$theme() {
 			this.mode = this.mode === 'light' ? 'dark' : 'light';
 			this.update$url();
+		},
+		apply$mode() {
+			const { documentElement } = window.document;
+			documentElement.setAttribute('data-mode', this.mode);
 		}
 	},
-	components: { RouterView, IconMoon, IconSun }
+	components: { RouterView, IconMoon, IconSun },
+	created() {
+		this.mode = this.$route.query.mode || 'light';
+	},
+	mounted() {
+		this.apply$mode();
+		this.update$url();
+	}
 };
 </script>
 
@@ -52,6 +71,11 @@ export default {
 	line-height: 1.5;
   min-height: 100%;
 	scroll-behavior: smooth;
+}
+
+:root[data-mode="dark"] {
+	color: #fff;
+	background-color: hsl(207, 26%, 17%);
 }
 
 * {
@@ -98,6 +122,10 @@ header {
 	position: sticky;
 	z-index: 99;
 	top: 0;
+}
+
+:root[data-mode="dark"] header {
+	background-color: hsl(209, 23%, 22%);
 }
 
 header > .responsive-wrapper {

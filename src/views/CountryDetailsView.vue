@@ -81,10 +81,10 @@
 				</div>
 				<div class="deet_">
 					<h3>Border Countries:</h3>
-					<div>
-						<!-- <template v-for="" :key="">
-						<span v-html="country" />
-					</template> -->
+					<div v-if="country$details.borders">
+						<template v-for="border in country$details.borders" :key="border">
+							<span v-html="border" />
+						</template>
 					</div>
 				</div>
 			</div>
@@ -228,18 +228,49 @@ export default {
 		margin: 2.5em 0;
 	}
 
-	.deet p > span:has(> span) {
-		display: inline-flex;
-		align-items: center;
+	.deet p span:has(> span) span:not(:first-child, :last-child):before {
+		content: ",";
+		display: inline-grid;
+		place-items: center;
+		width: 1em;
+		height: 1em;
+		margin-left: -0.375em;
+	}
+
+	.deet p span:has(> span) span:not(:only-child):last-child:before  {
+		content: "&";
+		display: inline-grid;
+		place-items: center;
+		width: 1em;
+		height: 1em;
+		margin: 0 0.125em;
 	}
 
 	.deet p span {
 		font-weight: 300;
+		overflow-wrap: break-word;
 	}
 
 	.deet_ h3 {
-		font-weight: 800;
-		font-size: 1.25em;
+		font-size: 1.125em;
+		margin-bottom: 0.75em;
+	}
+
+	.deet_ div {
+		display: flex;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: 0.625em;
+	}
+
+	.deet_ div span {
+		flex-shrink: 0;
+		font-size: 0.9375em;
+		font-weight: 300;
+		line-height: 0.875em;
+		padding: 0.5em 1.25em 0.375em;
+		box-shadow: 0 0 8px -2px #0002;
+		background-color: #fff;
 	}
 
 	@media only screen and (min-width: 768px) {
@@ -270,12 +301,27 @@ export default {
 			gap: 3em;
 		}
 
+		.deets {
+			align-self: center;
+		}
+
 		.deets h2 + div {
 			grid-template-columns: repeat(2, 1fr);
 		}
 
 		.deet:last-of-type {
 			margin: 0;
+		}
+
+		.deet_ {
+			margin: 2.5em 0;
+			display: flex;
+			align-items: center;
+			gap: 1em;
+		}
+
+		.deet_ h3 {
+			margin-bottom: 0;
 		}
 	}
 

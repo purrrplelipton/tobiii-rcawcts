@@ -307,12 +307,17 @@ export default {
 	margin-bottom: 3em;
 }
 
+:root[data-mode="dark"] .search-box {
+	background-color: hsl(209, 23%, 22%);
+}
+
 .search-box:focus-within {
 	outline-color: currentColor;
 }
 
 .search-results:not(:empty) {
 	position: absolute;
+	z-index: 99;
 	inset: calc(100% + 8px) 0 auto 0;
 	border-radius: 8px;
 	background-color: #fff;
@@ -401,6 +406,10 @@ export default {
 	box-shadow: 0 1px 8px #0001;
 }
 
+:root[data-mode="dark"]  .dropdown-area > button {
+	background-color: hsl(209, 23%, 22%);
+}
+
 .dropdown-area > button:focus {
 	outline-color: currentColor;
 }
@@ -411,28 +420,28 @@ export default {
 	pointer-events: none;
 }
 
-.dropdown-area > button + div {
+.dropdown-area > div {
 	position: absolute;
 	z-index: 1;
-	inset: calc(100% + 0.375em) 0 auto 0;
+	inset: calc(100% + 8px) 0 auto 0;
 	background-color: #fff;
 	border-radius: 8px;
 	padding: 0.5em 0;
 	box-shadow: 0 4px 12px #0001;
 }
 
-.dropdown-area > button + div button {
+.dropdown-area > div button {
 	display: block;
 	width: 100%;
 	padding: 0.5em 1.375em;
 	text-align: unset;
 }
 
-.dropdown-area > button + div button:hover {
+.dropdown-area > div button:hover {
 	background-color: hsla(0, 0%, 0%, 0.01);
 }
 
-.dropdown-area > button + div button:focus {
+.dropdown-area > div button:focus {
 	outline-color: currentColor;
 	border-radius: 6px;
 }
@@ -454,6 +463,10 @@ export default {
 	background-color: #0000;
 	background-image: linear-gradient(to bottom, #0000, #fff);
 	padding: 8px 0;
+}
+
+:root[data-mode="dark"] [data-role="footer"] {
+	background-image: linear-gradient(to bottom, #0000, hsl(209, 23%, 22%));
 }
 
 [data-role="footer"] button {

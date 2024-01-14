@@ -52,6 +52,10 @@ a {
 		transition: outline-color 0.125s ease-in-out, transform 0.125s ease-in-out;
 	}
 
+	:root[data-mode="dark"] a {
+		background-color: hsl(209, 23%, 22%);
+	}
+
 	a:focus {
 		outline-color: currentColor;
 	}
