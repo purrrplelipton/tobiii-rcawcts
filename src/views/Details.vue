@@ -69,11 +69,11 @@
 						</p>
 					</div>
 				</div>
-				<div class="deet_">
+				<div v-if="country.borders" class="deet_">
 					<h3>Border Countries:</h3>
-					<div v-if="country.borders">
+					<div>
 						<template v-for="border in country.borders" :key="border">
-							<RouterLink :replace="true" :to="border">
+							<RouterLink :to="border">
 								<span v-html="border" />
 							</RouterLink>
 						</template>

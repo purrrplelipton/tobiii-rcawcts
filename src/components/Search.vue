@@ -1,14 +1,15 @@
 <template>
-	<div class="search-container">
-		<div class="field">
+	<div ref="searchbox" class="search-container">
+		<label for="searchfield" class="field">
 			<IconSearch />
 			<input
 				type="text"
 				placeholder="Search for a country..."
+				id="searchfield"
 				:value="value"
 				@input="search_handler"
 			/>
-		</div>
+		</label>
 		<div aria-live="polite">
 			<Loader v-if="searching && !results && !errorMessage" />
 			<div v-if="!searching && results && results.length && !errorMessage" class="results-list">
@@ -51,8 +52,8 @@ export default {
 		return { value: '', searching: false, results: null, errorMessage: null };
 	},
 	methods: {
-		async search_handler(evt) {
-			this.value = evt.currentTarget.value;
+		async search_handler({ target }) {
+			this.value = target.value;
 
 			if (this.timeout) {
 				clearTimeout(this.timeout);
@@ -60,6 +61,7 @@ export default {
 
 			this.timeout = setTimeout(async () => {
 				if (this.value.trim()) {
+					this.results = null;
 					try {
 						this.searching = true;
 						const response = await fetch(`https://restcountries.com/v3.1/name/${this.value}`);
@@ -79,9 +81,30 @@ export default {
 					this.errorMessage = null;
 				}
 			}, 500);
+		},
+		outside_click({ target }) {
+			const searchbox = this.$refs.searchbox;
+			if (searchbox && !searchbox.contains(target)) {
+				this.value = '';
+				this.searching = false;
+				this.results = null;
+				this.errorMessage = null;
+			}
 		}
 	},
-	components: { IconSearch, Loader, RouterLink, Error }
+	components: { IconSearch, Loader, RouterLink, Error },
+	watch: {
+		searching(srchng) {
+			const { documentElement: root } = window.document;
+			root.style.pointerEvents = srchng ? 'none' : 'auto';
+		}
+	},
+	mounted() {
+		window.document.addEventListener('click', this.outside_click);
+	},
+	beforeUnmount() {
+		window.document.removeEventListener('click', this.outside_click);
+	}
 };
 </script>
 
@@ -89,6 +112,7 @@ export default {
 .search-container {
 	position: relative;
 	margin-bottom: 3em;
+	pointer-events: auto;
 }
 
 .field {

@@ -25,10 +25,7 @@ import { IconArrowLeft, IconArrowRight } from '@tabler/icons-vue';
 export default {
 	name: 'PaginationVue',
 	components: { IconArrowLeft, IconArrowRight },
-	data() {
-		return {};
-	},
-	props: { totalPages: Number, currentPage: Number, goBack: () => {}, goNext: () => {} }
+	props: { totalPages: Number, currentPage: Number, goBack: Function, goNext: Function }
 };
 </script>
 

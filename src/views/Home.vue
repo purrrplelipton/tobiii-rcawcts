@@ -13,8 +13,8 @@
 		<Pagination
 			:total-pages="totalPages"
 			:current-page="currentPage"
-			@goBack="goBack"
-			@goNext="goNext"
+			:go-back="goBack"
+			:go-next="goNext"
 		/>
 	</template>
 	<Error v-if="!loading && error" :message="error.message" />

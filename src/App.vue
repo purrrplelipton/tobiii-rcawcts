@@ -40,8 +40,8 @@ export default {
 	components: { RouterView, IconMoon, IconSun },
 	watch: {
 		mode(selectedMode) {
-			const { documentElement } = window.document;
-			documentElement.setAttribute('data-mode', selectedMode);
+			const { documentElement: root } = window.document;
+			root.setAttribute('data-mode', selectedMode);
 			window.localStorage.setItem('mode', selectedMode);
 		}
 	}
@@ -58,7 +58,7 @@ export default {
 	min-height: 100%;
 	scroll-behavior: smooth;
 	transition: color 0.1s linear, background-color 0.1s linear;
-	scrollbar-gutter: auto;
+	scrollbar-gutter: stable;
 }
 
 :root[data-mode="dark"] {
