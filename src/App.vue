@@ -13,7 +13,7 @@
 		</div>
 	</header>
 	<div role="main">
-		<div class="responsive-wrapper">
+		<div aria-live="polite" class="responsive-wrapper">
 			<RouterView />
 		</div>
 	</div>
@@ -34,16 +34,15 @@ export default {
 		}
 	},
 	created() {
-		const { mode } = this.$route.query;
-		this.mode = ['light', 'dark'].includes(mode) ? mode : 'light';
+		const stored$mode = window.localStorage.getItem('mode');
+		this.mode = stored$mode ? stored$mode : 'light';
 	},
 	components: { RouterView, IconMoon, IconSun },
 	watch: {
 		mode(selectedMode) {
-			const current$query = { ...this.$route.query };
-			this.$router.replace({ query: { ...current$query, mode: selectedMode } });
 			const { documentElement } = window.document;
-			documentElement.setAttribute('data-mode', this.mode);
+			documentElement.setAttribute('data-mode', selectedMode);
+			window.localStorage.setItem('mode', selectedMode);
 		}
 	}
 };
@@ -56,9 +55,10 @@ export default {
   font-family: "Nunito Sans", sans-serif;
   font-weight: 600;
 	line-height: 1.5;
-  min-height: 100%;
+	min-height: 100%;
 	scroll-behavior: smooth;
 	transition: color 0.1s linear, background-color 0.1s linear;
+	scrollbar-gutter: auto;
 }
 
 :root[data-mode="dark"] {
@@ -84,10 +84,6 @@ export default {
 	text-decoration: none;
 }
 
-#app {
-  display: contents;
-}
-
 .responsive-wrapper {
   width: 90%;
   max-width: 1280px;
@@ -95,18 +91,9 @@ export default {
 	position: relative;
 }
 
-@keyframes spin {
-	from {
-		transform: rotate(0turn);
-	} to {
-		transform: rotate(1turn);
-	}
-}
-
 header {
   background-color: #fff;
   box-shadow: 0 2px 4px #0001;
-	margin-bottom: 1.5em;
 	position: sticky;
 	z-index: 99;
 	top: 0;

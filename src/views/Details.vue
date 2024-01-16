@@ -5,42 +5,38 @@
 			<span>Back</span>
 		</button>
 	</div>
-	<template v-if="loading && !country$details && !error">
-		<div role="progressbar">
-			<IconLoader2 aria-hidden="true" />
-		</div>
-	</template>
-	<template v-if="!loading && country$details && !error">
+	<Loader v-if="loading && !country && !errorMessage" />
+	<template v-if="!loading && country && !errorMessage">
 		<div class="country-deets">
 			<div class="flag-div">
 				<img
 					loading="lazy"
-					:src="country$details.flags.svg"
-					:alt="country$details.flags.alt || `an image of ${country$details.name.common}'s flag'`"
+					:src="country.flags.svg"
+					:alt="country.flags.alt || `an image of ${country.name.common}'s flag'`"
 				/>
 			</div>
 			<div class="deets">
-				<h2 v-html="country$details.name.common" />
+				<h2 v-html="country.name.common" />
 				<div>
 					<div class="deet">
 						<p>
 							Native Name:
 							<span>
 								<template
-									v-for="nativeName in Object.keys(country$details.name.nativeName)"
+									v-for="nativeName in Object.keys(country.name.nativeName)"
 									:key="nativeName"
 								>
-									<span v-html="country$details.name.nativeName[nativeName].official" />
+									<span v-html="country.name.nativeName[nativeName].official" />
 								</template>
 							</span>
 						</p>
-						<p>Population: <span v-html="country$details.population" /></p>
-						<p>Region: <span v-html="country$details.region" /></p>
-						<p>Sub Region: <span v-html="country$details.subregion" /></p>
+						<p>Population: <span v-html="country.population" /></p>
+						<p>Region: <span v-html="country.region" /></p>
+						<p>Sub Region: <span v-html="country.subregion" /></p>
 						<p>
 							Capital:
-							<span v-if="country$details.capital">
-								<template v-for="capital in country$details.capital" :key="capital">
+							<span v-if="country.capital">
+								<template v-for="capital in country.capital" :key="capital">
 									<span v-html="capital" />
 								</template>
 							</span>
@@ -50,7 +46,7 @@
 						<p>
 							Top Level Domain:
 							<span>
-								<template v-for="tld in country$details.tld" :key="tld">
+								<template v-for="tld in country.tld" :key="tld">
 									<span v-html="tld" />
 								</template>
 							</span>
@@ -58,22 +54,16 @@
 						<p>
 							Currencies:
 							<span>
-								<template
-									v-for="currency in Object.keys(country$details.currencies)"
-									:key="currency"
-								>
-									<span v-html="country$details.currencies[currency].name" />
+								<template v-for="currency in Object.keys(country.currencies)" :key="currency">
+									<span v-html="country.currencies[currency].name" />
 								</template>
 							</span>
 						</p>
 						<p>
 							Languages:
 							<span>
-								<template
-									v-for="language in Object.keys(country$details.languages)"
-									:key="language"
-								>
-									<span v-html="country$details.languages[language]" />
+								<template v-for="language in Object.keys(country.languages)" :key="language">
+									<span v-html="country.languages[language]" />
 								</template>
 							</span>
 						</p>
@@ -81,9 +71,9 @@
 				</div>
 				<div class="deet_">
 					<h3>Border Countries:</h3>
-					<div v-if="country$details.borders">
-						<template v-for="border in country$details.borders" :key="border">
-							<RouterLink :to="border">
+					<div v-if="country.borders">
+						<template v-for="border in country.borders" :key="border">
+							<RouterLink :replace="true" :to="border">
 								<span v-html="border" />
 							</RouterLink>
 						</template>
@@ -92,56 +82,61 @@
 			</div>
 		</div>
 	</template>
-	<template v-if="!loading && error">
-		<div>
-			<h2>{{ error.message }}</h2>
-		</div>
-	</template>
+	<Error v-if="!loading && errorMessage" :message="errorMessage" />
 </template>
 
 <script>
-import { IconArrowNarrowLeft, IconLoader2 } from '@tabler/icons-vue';
+import { IconArrowNarrowLeft } from '@tabler/icons-vue';
 import { RouterLink } from 'vue-router';
+import Error from '@/components/common/Error.vue';
+import Loader from '@/components/common/Loader.vue';
 
 export default {
-	name: 'CountryDetailsView',
+	name: 'DetailsVue',
 	data() {
-		return { loading: false, country$details: null, error: null };
+		return { loading: false, country: null, errorMessage: null };
 	},
 	computed: {
 		cca3() {
 			const { cca3 } = this.$route.params;
-			if (cca3) {
-				return cca3;
-			}
+			if (cca3) return cca3;
 			return '';
 		}
 	},
 	methods: {
 		go$back() {
 			this.$router.back();
+		},
+		async fetch$data() {
+			try {
+				this.loading = true;
+
+				await this.$nextTick();
+
+				const response = await fetch(`https://restcountries.com/v3.1/alpha/${this.cca3}`);
+				if (!response.ok) {
+					throw new Error('Error fetching country details.');
+				}
+				const data = await response.json();
+				this.country = data[0];
+			} catch ({ message }) {
+				this.errorMessage = message;
+			} finally {
+				this.loading = false;
+			}
 		}
 	},
-	components: { IconArrowNarrowLeft, IconLoader2, RouterLink },
+	components: { IconArrowNarrowLeft, RouterLink, Error, Loader },
 	async mounted() {
-		try {
-			this.loading = true;
-			const response = await fetch(`https://restcountries.com/v3.1/alpha/${this.cca3}`);
-			if (!response.ok) {
-				throw new Error('Error fetching country details.');
-			}
-			const data = await response.json();
-			this.country$details = data[0];
-		} catch (error) {
-			this.error = error;
-		} finally {
-			this.loading = false;
-		}
+		await this.fetch$data();
+	},
+	watch: {
+		cca3: 'fetch$data'
 	},
 	beforeUnmount() {
 		this.loading = false;
-		this.country$details = null;
-		this.error = null;
+		this.country = null;
+		this.errorMessage = null;
 	}
 };
 </script>
